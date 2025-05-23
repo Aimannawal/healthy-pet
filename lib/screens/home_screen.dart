@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_feather_icons/flutter_feather_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:healty_pet/models/doctor_model.dart';
+import 'package:healty_pet/models/service_model.dart';
 import 'package:healty_pet/theme.dart';
 
-var services = ['Vaccine', 'Surgery', 'SPA & Treatment', 'Consultation'];
 var selectedService = 0;
+var menus = [
+  FeatherIcons.home,
+  FeatherIcons.heart,
+  FeatherIcons.messageCircle,
+  FeatherIcons.user,
+];
+var selectedMenu = 0;
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     return Scaffold(
+      extendBody: true,
+      bottomNavigationBar: _bottomNavigationBar(),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Column(
@@ -25,43 +36,173 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: 20),
               _search(),
               SizedBox(height: 20),
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder:
-                      (context, index) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color:
-                              selectedService == index
-                                  ? const Color(0xFF818AF9)
-                                  : const Color(0xFFF6F6F6),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Center(
-                          child: Text(
-                            services[index],
-                            style: GoogleFonts.manrope(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color:
-                                  selectedService == index
-                                      ? const Color(0xFFFFFFFF)
-                                      : const Color(0xFF3F3E3F).withOpacity(.3),
-                            ),
-                          ),
-                        ),
-                      ),
-                  separatorBuilder:
-                      (context, index) => const SizedBox(width: 10),
-                  itemCount: services.length,
-                ),
-              ),
+              _services(),
+              SizedBox(height: 20),
+              _doctors(),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  BottomNavigationBar _bottomNavigationBar() => BottomNavigationBar(
+    selectedItemColor: purpleColor,
+    type: BottomNavigationBarType.fixed,
+    items:
+        menus
+            .map(
+              (e) =>
+                  BottomNavigationBarItem(icon: Icon(e), label: e.toString()),
+            )
+            .toList(),
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            unselectedItemColor: Color(0xFFBFBFBF),
+  );
+
+  ListView _doctors() {
+    return ListView.separated(
+      padding: EdgeInsets.symmetric(horizontal: 20),
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      itemBuilder: (content, index) => _doctor(doctors[index]),
+      separatorBuilder: (content, index) => SizedBox(height: 11),
+      itemCount: doctors.length,
+    );
+  }
+
+  Container _doctor(DoctorModel doctorModel) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF35385A).withOpacity(.12),
+            blurRadius: 30,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            clipBehavior: Clip.hardEdge,
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            child: Image.asset(
+              'assets/images/${doctorModel.image}',
+              height: 103,
+              width: 88,
+            ),
+          ),
+          SizedBox(width: 20),
+          Flexible(
+            fit: FlexFit.tight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  doctorModel.name,
+                  style: GoogleFonts.manrope(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: blackColor,
+                  ),
+                ),
+                SizedBox(height: 7),
+                RichText(
+                  text: TextSpan(
+                    text: "Service: ${doctorModel.services.join(', ')}",
+                    style: GoogleFonts.manrope(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 7),
+                Row(
+                  children: [
+                    Icon(
+                      FeatherIcons.mapPin,
+                      size: 14,
+                      color: Color(0xFFACA3A3),
+                    ),
+                    SizedBox(width: 7),
+                    Text(
+                      '${doctorModel.distance}km',
+                      style: GoogleFonts.manrope(
+                        fontSize: 12,
+                        color: Color(0xFFACA3A3),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 7),
+                Row(
+                  children: [
+                    Text(
+                      'Available for ',
+                      style: GoogleFonts.manrope(
+                        color: greenColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Spacer(),
+                    SvgPicture.asset('assets/svgs/cat.svg'),
+                    SizedBox(width: 10),
+                    SvgPicture.asset('assets/svgs/dog.svg'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SizedBox _services() {
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        scrollDirection: Axis.horizontal,
+        itemBuilder:
+            (context, index) => Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color:
+                    selectedService == index
+                        ? const Color(0xFF818AF9)
+                        : const Color(0xFFF6F6F6),
+                border:
+                    selectedService == index
+                        ? Border.all(
+                          color: Color(0xFFF1E5E5).withOpacity(.22),
+                          width: 2,
+                        )
+                        : null,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Center(
+                child: Text(
+                  Service.all()[index],
+                  style: GoogleFonts.manrope(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color:
+                        selectedService == index
+                            ? const Color(0xFFFFFFFF)
+                            : const Color(0xFF3F3E3F).withOpacity(.3),
+                  ),
+                ),
+              ),
+            ),
+        separatorBuilder: (context, index) => const SizedBox(width: 10),
+        itemCount: Service.all().length,
       ),
     );
   }
@@ -190,13 +331,13 @@ class HomeScreen extends StatelessWidget {
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: blackColor,
-              shadows: [
-                Shadow(
-                  color: greyTextColor,
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
+              // shadows: [
+              //   Shadow(
+              //     color: greyTextColor,
+              //     offset: Offset(0, 1),
+              //     blurRadius: 2,
+              //   ),
+              // ],
             ),
           ),
           Stack(
